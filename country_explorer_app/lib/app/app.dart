@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'theme/app_theme.dart';
+import '../features/presentation/pages/main_page.dart';
 
 class CountryApp extends StatelessWidget {
   const CountryApp({super.key});
@@ -6,10 +8,10 @@ class CountryApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(title: const Text('Country App')),
-        body: const Center(child: Text('Welcome to the Country App!')),
-      ),
+      title: 'Dünya Kəşfiyyatçısı',
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.dark,
+      home: const MainPage(),
     );
   }
 }

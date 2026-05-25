@@ -1,6 +1,11 @@
-import 'package:country_explorer_app/app/app.dart';
 import 'package:flutter/material.dart';
+import 'package:get_storage/get_storage.dart';
+import 'app/app.dart';
+import 'app/di/injection.dart';
 
-void main() {
-  return runApp(const CountryApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await GetStorage.init();
+  await initDependencies();
+  runApp(const CountryApp());
 }
