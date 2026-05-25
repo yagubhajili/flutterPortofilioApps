@@ -15,6 +15,7 @@ class InfoRowWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -24,7 +25,7 @@ class InfoRowWidget extends StatelessWidget {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: AppColors.surfaceVariant,
+              color: colors.surfaceVariant,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, size: 18, color: AppColors.primary),
@@ -36,8 +37,8 @@ class InfoRowWidget extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: const TextStyle(
-                    color: AppColors.textMuted,
+                  style: TextStyle(
+                    color: colors.textMuted,
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
                     letterSpacing: 0.5,
@@ -46,8 +47,8 @@ class InfoRowWidget extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   value,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: colors.textPrimary,
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),

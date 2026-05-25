@@ -10,10 +10,10 @@ import '../../features/domain/usecases/get_countries_by_codes.dart';
 import '../../features/domain/usecases/get_country_by_code.dart';
 import '../../features/domain/usecases/get_favorites.dart';
 import '../../features/domain/usecases/toggle_favorite.dart';
-import '../../features/presentation/bloc/compare/compare_bloc.dart';
-import '../../features/presentation/bloc/country_detail/country_detail_bloc.dart';
-import '../../features/presentation/bloc/country_list/country_list_bloc.dart';
-import '../../features/presentation/bloc/favorites/favorites_bloc.dart';
+import '../../features/presentation/bloc/compare/compare_cubit.dart';
+import '../../features/presentation/bloc/country_detail/country_detail_cubit.dart';
+import '../../features/presentation/bloc/country_list/country_list_cubit.dart';
+import '../../features/presentation/bloc/favorites/favorites_cubit.dart';
 
 final sl = GetIt.instance;
 
@@ -51,29 +51,29 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => ToggleFavoriteUseCase(sl()));
   sl.registerLazySingleton(() => GetFavoritesUseCase(sl()));
 
-  // BLoCs (factory — new instance per creation)
+  // Cubits (factory — new instance per creation)
   sl.registerFactory(
-    () => CountryListBloc(
+    () => CountryListCubit(
       getAllCountries: sl(),
       toggleFavorite: sl(),
       getFavorites: sl(),
     ),
   );
   sl.registerFactory(
-    () => CountryDetailBloc(
+    () => CountryDetailCubit(
       getCountryByCode: sl(),
       getCountriesByCodes: sl(),
       toggleFavorite: sl(),
     ),
   );
   sl.registerFactory(
-    () => FavoritesBloc(
+    () => FavoritesCubit(
       getAllCountries: sl(),
       getFavorites: sl(),
       toggleFavorite: sl(),
     ),
   );
   sl.registerFactory(
-    () => CompareBloc(getAllCountries: sl()),
+    () => CompareCubit(getAllCountries: sl()),
   );
 }

@@ -7,8 +7,7 @@ import '../../../app/theme/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/number_formatter.dart';
 import '../../domain/entities/country_entity.dart';
-import '../bloc/compare/compare_bloc.dart';
-import '../bloc/compare/compare_event.dart';
+import '../bloc/compare/compare_cubit.dart';
 import '../bloc/compare/compare_state.dart';
 import '../widgets/compare_row_widget.dart';
 
@@ -23,14 +22,14 @@ class _ComparePageState extends State<ComparePage> {
   @override
   void initState() {
     super.initState();
-    context.read<CompareBloc>().add(const LoadCompareCountriesEvent());
+    context.read<CompareCubit>().load();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: BlocBuilder<CompareBloc, CompareState>(
+        child: BlocBuilder<CompareCubit, CompareState>(
           builder: (context, state) {
             if (state is CompareLoading) {
               return const Center(
@@ -40,8 +39,8 @@ class _ComparePageState extends State<ComparePage> {
             if (state is CompareError) {
               return Center(
                 child: Text(state.message,
-                    style: const TextStyle(
-                        color: AppColors.textSecondary)),
+                    style: TextStyle(
+                        color: AppColors.of(context).textSecondary)),
               );
             }
             if (state is CompareReady) {
@@ -61,20 +60,22 @@ class _CompareBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 16),
-          const Row(
+          Row(
             children: [
-              Icon(Icons.compare_arrows, color: AppColors.primary, size: 22),
-              SizedBox(width: 8),
+              const Icon(Icons.compare_arrows,
+                  color: AppColors.primary, size: 22),
+              const SizedBox(width: 8),
               Text(
                 'Müqayisə Paneli',
                 style: TextStyle(
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                   fontSize: 22,
                   fontWeight: FontWeight.w800,
                 ),
@@ -82,9 +83,9 @@ class _CompareBody extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 6),
-          const Text(
+          Text(
             'İki ölkəni seçin və əsas göstəriciləri müqayisə edin.',
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+            style: TextStyle(color: colors.textSecondary, fontSize: 13),
           ),
           const SizedBox(height: 20),
           _CountrySelector(
@@ -92,7 +93,7 @@ class _CompareBody extends StatelessWidget {
             selected: state.country1,
             countries: state.allCountries,
             onSelected: (c) =>
-                context.read<CompareBloc>().add(SelectCountry1Event(c)),
+                context.read<CompareCubit>().selectCountry1(c),
           ),
           const SizedBox(height: 12),
           _CountrySelector(
@@ -100,7 +101,7 @@ class _CompareBody extends StatelessWidget {
             selected: state.country2,
             countries: state.allCountries,
             onSelected: (c) =>
-                context.read<CompareBloc>().add(SelectCountry2Event(c)),
+                context.read<CompareCubit>().selectCountry2(c),
           ),
           const SizedBox(height: 16),
           if (state.country1 != null && state.country2 != null) ...[
@@ -109,17 +110,15 @@ class _CompareBody extends StatelessWidget {
               child: ElevatedButton.icon(
                 icon: const Icon(Icons.bar_chart, size: 18),
                 label: const Text('GÖSTƏRİCİLƏRİ MÜQAYİSƏ ET'),
-                onPressed: () => context
-                    .read<CompareBloc>()
-                    .add(const ShowComparisonEvent()),
+                onPressed: () =>
+                    context.read<CompareCubit>().showComparison(),
               ),
             ),
             const SizedBox(height: 8),
             TextButton(
-              onPressed: () =>
-                  context.read<CompareBloc>().add(const ClearCompareEvent()),
-              child: const Text('Sıfırla',
-                  style: TextStyle(color: AppColors.textSecondary)),
+              onPressed: () => context.read<CompareCubit>().clear(),
+              child: Text('Sıfırla',
+                  style: TextStyle(color: colors.textSecondary)),
             ),
           ],
           if (state.showComparison &&
@@ -151,13 +150,14 @@ class _CountrySelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: AppColors.textSecondary,
+          style: TextStyle(
+            color: colors.textSecondary,
             fontSize: 12,
             fontWeight: FontWeight.w600,
             letterSpacing: 0.5,
@@ -167,14 +167,15 @@ class _CountrySelector extends StatelessWidget {
         GestureDetector(
           onTap: () => _showPicker(context),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: colors.surface,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: selected != null
                     ? AppColors.primary
-                    : AppColors.border,
+                    : colors.border,
                 width: selected != null ? 1.5 : 0.5,
               ),
             ),
@@ -191,7 +192,7 @@ class _CountrySelector extends StatelessWidget {
                       placeholder: (_, _) => Container(
                           width: 32,
                           height: 22,
-                          color: AppColors.surfaceVariant),
+                          color: colors.surfaceVariant),
                       errorWidget: (_, _, _) =>
                           const Icon(Icons.flag_outlined, size: 22),
                     ),
@@ -203,8 +204,8 @@ class _CountrySelector extends StatelessWidget {
                     selected?.commonName ?? 'Ölkə seçin...',
                     style: TextStyle(
                       color: selected != null
-                          ? AppColors.textPrimary
-                          : AppColors.textMuted,
+                          ? colors.textPrimary
+                          : colors.textMuted,
                       fontSize: 14,
                       fontWeight: selected != null
                           ? FontWeight.w600
@@ -212,8 +213,8 @@ class _CountrySelector extends StatelessWidget {
                     ),
                   ),
                 ),
-                const Icon(Icons.keyboard_arrow_down,
-                    color: AppColors.textMuted, size: 20),
+                Icon(Icons.keyboard_arrow_down,
+                    color: colors.textMuted, size: 20),
               ],
             ),
           ),
@@ -229,7 +230,7 @@ class _CountrySelector extends StatelessWidget {
   void _showPicker(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.surface,
+      backgroundColor: AppColors.of(context).surface,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -257,12 +258,13 @@ class _MiniCountryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
+        color: colors.surfaceVariant,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border, width: 0.5),
+        border: Border.all(color: colors.border, width: 0.5),
       ),
       child: Row(
         children: [
@@ -274,8 +276,9 @@ class _MiniCountryCard extends StatelessWidget {
               height: 36,
               fit: BoxFit.cover,
               placeholder: (_, _) =>
-                  Container(width: 52, height: 36, color: AppColors.surface),
-              errorWidget: (_, _, _) => const Icon(Icons.flag_outlined),
+                  Container(width: 52, height: 36, color: colors.surface),
+              errorWidget: (_, _, _) =>
+                  const Icon(Icons.flag_outlined),
             ),
           ),
           const SizedBox(width: 10),
@@ -285,16 +288,16 @@ class _MiniCountryCard extends StatelessWidget {
               children: [
                 Text(
                   country.commonName,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: colors.textPrimary,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 Text(
                   AppConstants.regionAz(country.region),
-                  style: const TextStyle(
-                      color: AppColors.textSecondary, fontSize: 12),
+                  style:
+                      TextStyle(color: colors.textSecondary, fontSize: 12),
                 ),
               ],
             ),
@@ -349,6 +352,7 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Column(
       children: [
         const SizedBox(height: 12),
@@ -356,7 +360,7 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
           width: 40,
           height: 4,
           decoration: BoxDecoration(
-            color: AppColors.border,
+            color: colors.border,
             borderRadius: BorderRadius.circular(2),
           ),
         ),
@@ -367,11 +371,11 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
             controller: _searchCtrl,
             onChanged: _onSearch,
             autofocus: true,
-            style: const TextStyle(color: AppColors.textPrimary),
-            decoration: const InputDecoration(
+            style: TextStyle(color: colors.textPrimary),
+            decoration: InputDecoration(
               hintText: 'Ölkə axtar...',
               prefixIcon:
-                  Icon(Icons.search, color: AppColors.textMuted, size: 20),
+                  Icon(Icons.search, color: colors.textMuted, size: 20),
             ),
           ),
         ),
@@ -394,16 +398,16 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                     placeholder: (_, _) => Container(
                         width: 40,
                         height: 28,
-                        color: AppColors.surfaceVariant),
+                        color: colors.surfaceVariant),
                     errorWidget: (_, _, _) =>
                         const Icon(Icons.flag_outlined),
                   ),
                 ),
                 title: Text(c.commonName,
-                    style: const TextStyle(color: AppColors.textPrimary)),
+                    style: TextStyle(color: colors.textPrimary)),
                 subtitle: Text(AppConstants.regionAz(c.region),
-                    style: const TextStyle(
-                        color: AppColors.textSecondary, fontSize: 12)),
+                    style: TextStyle(
+                        color: colors.textSecondary, fontSize: 12)),
               );
             },
           ),
@@ -424,6 +428,7 @@ class _ComparisonSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Column(
       children: [
         _CountryHeaders(country1: country1, country2: country2),
@@ -431,18 +436,21 @@ class _ComparisonSection extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: colors.surface,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.border, width: 0.5),
+            border: Border.all(color: colors.border, width: 0.5),
           ),
           child: Column(
             children: [
               CompareRowWidget(
                 icon: Icons.people_outline,
                 label: 'Əhali',
-                value1: NumberFormatter.formatPopulation(country1.population),
-                value2: NumberFormatter.formatPopulation(country2.population),
-                value1Better: country1.population > country2.population,
+                value1: NumberFormatter.formatPopulation(
+                    country1.population),
+                value2: NumberFormatter.formatPopulation(
+                    country2.population),
+                value1Better:
+                    country1.population > country2.population,
               ),
               const Divider(height: 16),
               CompareRowWidget(
@@ -461,30 +469,30 @@ class _ComparisonSection extends StatelessWidget {
               CompareRowWidget(
                 icon: Icons.language,
                 label: 'Dillər',
-                value1: country1.languages.values
-                    .take(2)
-                    .join(', '),
-                value2: country2.languages.values
-                    .take(2)
-                    .join(', '),
+                value1: country1.languages.values.take(2).join(', '),
+                value2: country2.languages.values.take(2).join(', '),
               ),
               const Divider(height: 16),
               CompareRowWidget(
                 icon: Icons.schedule,
                 label: 'Vaxt Zonası',
-                value1: country1.timezones.first,
-                value2: country2.timezones.first,
+                value1: country1.timezones.isNotEmpty
+                    ? country1.timezones.first
+                    : '—',
+                value2: country2.timezones.isNotEmpty
+                    ? country2.timezones.first
+                    : '—',
               ),
             ],
           ),
         ),
         const SizedBox(height: 24),
-        const Align(
+        Align(
           alignment: Alignment.centerLeft,
           child: Text(
             'Coğrafi Yerləşmə',
             style: TextStyle(
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
               fontSize: 16,
               fontWeight: FontWeight.w700,
             ),
@@ -513,26 +521,28 @@ class _CountryHeaders extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(child: _Header(country: country1)),
+        Expanded(child: _FlagHeader(country: country1)),
         const SizedBox(width: 8),
-        Expanded(child: _Header(country: country2)),
+        Expanded(child: _FlagHeader(country: country2)),
       ],
     );
   }
 }
 
-class _Header extends StatelessWidget {
+class _FlagHeader extends StatelessWidget {
   final CountryEntity country;
-  const _Header({required this.country});
+  const _FlagHeader({required this.country});
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: colors.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+        border: Border.all(
+            color: AppColors.primary.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [
@@ -545,8 +555,8 @@ class _Header extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             country.commonName,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
+            style: TextStyle(
+              color: colors.textPrimary,
               fontSize: 12,
               fontWeight: FontWeight.w600,
             ),
@@ -566,17 +576,15 @@ class _MiniMap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     if (country.latlng == null || country.latlng!.length < 2) {
       return Container(
         height: 120,
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: colors.surface,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: const Center(
-          child: Icon(Icons.map_outlined,
-              color: AppColors.textMuted, size: 32),
-        ),
+        child: Icon(Icons.map_outlined, color: colors.textMuted, size: 32),
       );
     }
     final lat = country.latlng![0];
@@ -588,7 +596,8 @@ class _MiniMap extends StatelessWidget {
         child: Stack(
           children: [
             FlutterMap(
-              options: MapOptions(initialCenter: LatLng(lat, lng), initialZoom: 3),
+              options: MapOptions(
+                  initialCenter: LatLng(lat, lng), initialZoom: 3),
               children: [
                 TileLayer(
                   urlTemplate:
@@ -616,11 +625,11 @@ class _MiniMap extends StatelessWidget {
               right: 0,
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 4),
-                color: AppColors.background.withValues(alpha: 0.75),
+                color: colors.background.withValues(alpha: 0.75),
                 child: Text(
                   country.commonName,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: colors.textPrimary,
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                   ),

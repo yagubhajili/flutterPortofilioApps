@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../app/di/injection.dart';
 import '../../../app/theme/app_colors.dart';
-import '../bloc/compare/compare_bloc.dart';
-import '../bloc/country_list/country_list_bloc.dart';
-import '../bloc/country_list/country_list_event.dart';
-import '../bloc/favorites/favorites_bloc.dart';
+import '../bloc/compare/compare_cubit.dart';
+import '../bloc/country_list/country_list_cubit.dart';
+import '../bloc/favorites/favorites_cubit.dart';
 import 'compare_page.dart';
 import 'favorites_page.dart';
 import 'home_page.dart';
@@ -18,34 +17,35 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-  late final CountryListBloc _countryListBloc;
-  late final FavoritesBloc _favoritesBloc;
-  late final CompareBloc _compareBloc;
+  late final CountryListCubit _countryListCubit;
+  late final FavoritesCubit _favoritesCubit;
+  late final CompareCubit _compareCubit;
   int _index = 0;
 
   @override
   void initState() {
     super.initState();
-    _countryListBloc = sl<CountryListBloc>();
-    _favoritesBloc = sl<FavoritesBloc>();
-    _compareBloc = sl<CompareBloc>();
+    _countryListCubit = sl<CountryListCubit>();
+    _favoritesCubit = sl<FavoritesCubit>();
+    _compareCubit = sl<CompareCubit>();
   }
 
   @override
   void dispose() {
-    _countryListBloc.close();
-    _favoritesBloc.close();
-    _compareBloc.close();
+    _countryListCubit.close();
+    _favoritesCubit.close();
+    _compareCubit.close();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return MultiBlocProvider(
       providers: [
-        BlocProvider.value(value: _countryListBloc),
-        BlocProvider.value(value: _favoritesBloc),
-        BlocProvider.value(value: _compareBloc),
+        BlocProvider.value(value: _countryListCubit),
+        BlocProvider.value(value: _favoritesCubit),
+        BlocProvider.value(value: _compareCubit),
       ],
       child: Builder(
         builder: (ctx) => Scaffold(
@@ -54,18 +54,16 @@ class _MainPageState extends State<MainPage> {
             children: const [HomePage(), FavoritesPage(), ComparePage()],
           ),
           bottomNavigationBar: Container(
-            decoration: const BoxDecoration(
-              color: AppColors.surface,
+            decoration: BoxDecoration(
+              color: colors.surface,
               border: Border(
-                  top: BorderSide(color: AppColors.border, width: 0.5)),
+                  top: BorderSide(color: colors.border, width: 0.5)),
             ),
             child: BottomNavigationBar(
               currentIndex: _index,
               onTap: (i) {
                 if (i == 3) {
-                  ctx
-                      .read<CountryListBloc>()
-                      .add(const RandomCountryEvent());
+                  ctx.read<CountryListCubit>().random();
                   setState(() => _index = 0);
                 } else {
                   setState(() => _index = i);

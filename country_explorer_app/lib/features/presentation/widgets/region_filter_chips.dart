@@ -31,6 +31,7 @@ class RegionFilterChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return SizedBox(
       height: 38,
       child: ListView.separated(
@@ -48,19 +49,17 @@ class RegionFilterChips extends StatelessWidget {
               duration: const Duration(milliseconds: 200),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: isSelected ? AppColors.primary : AppColors.surface,
+                color: isSelected ? AppColors.primary : colors.surface,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: isSelected ? AppColors.primary : AppColors.border,
+                  color: isSelected ? AppColors.primary : colors.border,
                   width: isSelected ? 1.5 : 0.5,
                 ),
               ),
               child: Text(
                 label,
                 style: TextStyle(
-                  color: isSelected
-                      ? AppColors.textPrimary
-                      : AppColors.textSecondary,
+                  color: isSelected ? Colors.white : colors.textSecondary,
                   fontSize: 13,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                 ),

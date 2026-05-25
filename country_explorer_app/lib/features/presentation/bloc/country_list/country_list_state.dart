@@ -1,6 +1,14 @@
 import 'package:equatable/equatable.dart';
 import '../../../domain/entities/country_entity.dart';
-import 'country_list_event.dart';
+
+enum SortType {
+  alphabeticalAZ,
+  alphabeticalZA,
+  populationHighLow,
+  populationLowHigh,
+  areaLargeSmall,
+  areaSmallLarge,
+}
 
 abstract class CountryListState extends Equatable {
   const CountryListState();

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../app/theme/app_colors.dart';
-import '../bloc/country_list/country_list_bloc.dart';
-import '../bloc/country_list/country_list_event.dart';
+import '../bloc/country_list/country_list_cubit.dart';
 import '../bloc/country_list/country_list_state.dart';
 import '../widgets/country_card.dart';
 import '../widgets/region_filter_chips.dart';
@@ -22,9 +21,9 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    final bloc = context.read<CountryListBloc>();
-    if (bloc.state is CountryListInitial) {
-      bloc.add(const LoadCountriesEvent());
+    final cubit = context.read<CountryListCubit>();
+    if (cubit.state is CountryListInitial) {
+      cubit.load();
     }
   }
 
@@ -52,7 +51,7 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: 16),
             _SearchBar(controller: _searchController),
             const SizedBox(height: 14),
-            BlocBuilder<CountryListBloc, CountryListState>(
+            BlocBuilder<CountryListCubit, CountryListState>(
               buildWhen: (p, c) =>
                   c is CountryListLoaded || c is CountryListInitial,
               builder: (context, state) {
@@ -61,9 +60,8 @@ class _HomePageState extends State<HomePage> {
                     : 'Hamısı';
                 return RegionFilterChips(
                   selected: region,
-                  onSelected: (r) => context
-                      .read<CountryListBloc>()
-                      .add(FilterByRegionEvent(r)),
+                  onSelected: (r) =>
+                      context.read<CountryListCubit>().filterByRegion(r),
                 );
               },
             ),
@@ -71,10 +69,11 @@ class _HomePageState extends State<HomePage> {
             _SortBar(),
             const SizedBox(height: 8),
             Expanded(
-              child: BlocConsumer<CountryListBloc, CountryListState>(
+              child: BlocConsumer<CountryListCubit, CountryListState>(
                 listener: (context, state) {
                   if (state is CountryListLoaded &&
                       state.randomCountry != null) {
+                    context.read<CountryListCubit>().clearRandom();
                     _openDetail(context, state.randomCountry!.cca3);
                   }
                 },
@@ -88,9 +87,8 @@ class _HomePageState extends State<HomePage> {
                   if (state is CountryListError) {
                     return _ErrorView(
                       message: state.message,
-                      onRetry: () => context
-                          .read<CountryListBloc>()
-                          .add(const LoadCountriesEvent()),
+                      onRetry: () =>
+                          context.read<CountryListCubit>().load(),
                     );
                   }
                   if (state is CountryListLoaded) {
@@ -109,8 +107,8 @@ class _HomePageState extends State<HomePage> {
                           country: country,
                           onTap: () => _openDetail(context, country.cca3),
                           onFavoriteTap: () => context
-                              .read<CountryListBloc>()
-                              .add(ToggleFavoriteListEvent(country.cca3)),
+                              .read<CountryListCubit>()
+                              .toggleFavorite(country.cca3),
                         );
                       },
                     );
@@ -126,7 +124,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _onRandomTap(BuildContext context) {
-    context.read<CountryListBloc>().add(const RandomCountryEvent());
+    context.read<CountryListCubit>().random();
   }
 }
 
@@ -136,6 +134,7 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
       child: Column(
@@ -145,18 +144,17 @@ class _Header extends StatelessWidget {
             children: [
               const Icon(Icons.public, color: AppColors.primary, size: 22),
               const SizedBox(width: 8),
-              const Text(
+              Text(
                 'Dünya Kəşfiyyatçısı',
                 style: TextStyle(
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
                 ),
               ),
               const Spacer(),
               IconButton(
-                icon: const Icon(Icons.search,
-                    color: AppColors.textSecondary),
+                icon: Icon(Icons.search, color: colors.textSecondary),
                 onPressed: () {},
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
@@ -164,18 +162,18 @@ class _Header extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             'Yeni dünyalar kəşf edin',
             style: TextStyle(
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
               fontSize: 22,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 6),
-          const Text(
+          Text(
             'Planetimizin müxtəlifliyini, mədəniyyətlərini və coğrafi möcüzələrini hər yerdə araşdır.',
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+            style: TextStyle(color: colors.textSecondary, fontSize: 13),
           ),
           const SizedBox(height: 16),
           SizedBox(
@@ -198,16 +196,17 @@ class _SearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: TextField(
         controller: controller,
-        onChanged: (q) =>
-            context.read<CountryListBloc>().add(SearchCountriesEvent(q)),
-        style: const TextStyle(color: AppColors.textPrimary),
-        decoration: const InputDecoration(
+        onChanged: (q) => context.read<CountryListCubit>().search(q),
+        style: TextStyle(color: colors.textPrimary),
+        decoration: InputDecoration(
           hintText: 'Ölkə və ya paytaxt axtar...',
-          prefixIcon: Icon(Icons.search, color: AppColors.textMuted, size: 20),
+          prefixIcon:
+              Icon(Icons.search, color: colors.textMuted, size: 20),
           suffixIcon: null,
         ),
       ),
@@ -218,7 +217,8 @@ class _SearchBar extends StatelessWidget {
 class _SortBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<CountryListBloc, CountryListState>(
+    final colors = AppColors.of(context);
+    return BlocBuilder<CountryListCubit, CountryListState>(
       buildWhen: (p, c) => c is CountryListLoaded,
       builder: (context, state) {
         if (state is! CountryListLoaded) return const SizedBox.shrink();
@@ -228,8 +228,8 @@ class _SortBar extends StatelessWidget {
             children: [
               Text(
                 '${state.displayedCountries.length} ölkə',
-                style: const TextStyle(
-                    color: AppColors.textSecondary, fontSize: 13),
+                style: TextStyle(
+                    color: colors.textSecondary, fontSize: 13),
               ),
               const Spacer(),
               GestureDetector(
@@ -238,28 +238,27 @@ class _SortBar extends StatelessWidget {
                   backgroundColor: Colors.transparent,
                   builder: (_) => SortBottomSheet(
                     current: state.sortType,
-                    onSelected: (s) => context
-                        .read<CountryListBloc>()
-                        .add(SortCountriesEvent(s)),
+                    onSelected: (s) =>
+                        context.read<CountryListCubit>().sort(s),
                   ),
                 ),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                       horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
+                    color: colors.surface,
                     borderRadius: BorderRadius.circular(8),
-                    border:
-                        Border.all(color: AppColors.border, width: 0.5),
+                    border: Border.all(color: colors.border, width: 0.5),
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
-                      Icon(Icons.sort, color: AppColors.primary, size: 16),
-                      SizedBox(width: 6),
+                      const Icon(Icons.sort,
+                          color: AppColors.primary, size: 16),
+                      const SizedBox(width: 6),
                       Text(
                         'Çeşidlə',
                         style: TextStyle(
-                            color: AppColors.textSecondary, fontSize: 13),
+                            color: colors.textSecondary, fontSize: 13),
                       ),
                     ],
                   ),
@@ -280,19 +279,18 @@ class _ErrorView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.wifi_off_outlined,
-                color: AppColors.textMuted, size: 48),
+            Icon(Icons.wifi_off_outlined, color: colors.textMuted, size: 48),
             const SizedBox(height: 12),
             Text(
               message,
-              style: const TextStyle(
-                  color: AppColors.textSecondary, fontSize: 14),
+              style: TextStyle(color: colors.textSecondary, fontSize: 14),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
@@ -312,15 +310,16 @@ class _EmptyView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    final colors = AppColors.of(context);
+    return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.search_off, color: AppColors.textMuted, size: 48),
-          SizedBox(height: 12),
+          Icon(Icons.search_off, color: colors.textMuted, size: 48),
+          const SizedBox(height: 12),
           Text(
             'Heç bir nəticə tapılmadı.',
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+            style: TextStyle(color: colors.textSecondary, fontSize: 14),
           ),
         ],
       ),

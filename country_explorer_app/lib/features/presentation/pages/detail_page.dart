@@ -7,8 +7,7 @@ import '../../../app/di/injection.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/number_formatter.dart';
-import '../bloc/country_detail/country_detail_bloc.dart';
-import '../bloc/country_detail/country_detail_event.dart';
+import '../bloc/country_detail/country_detail_cubit.dart';
 import '../bloc/country_detail/country_detail_state.dart';
 import '../widgets/border_country_card.dart';
 import '../widgets/info_row_widget.dart';
@@ -20,8 +19,7 @@ class DetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => sl<CountryDetailBloc>()
-        ..add(LoadCountryDetailEvent(cca3)),
+      create: (_) => sl<CountryDetailCubit>()..load(cca3),
       child: const _DetailView(),
     );
   }
@@ -32,9 +30,10 @@ class _DetailView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: BlocBuilder<CountryDetailBloc, CountryDetailState>(
+      backgroundColor: colors.background,
+      body: BlocBuilder<CountryDetailCubit, CountryDetailState>(
         builder: (context, state) {
           if (state is CountryDetailLoading) {
             return const Center(
@@ -45,7 +44,7 @@ class _DetailView extends StatelessWidget {
               appBar: AppBar(title: const Text('Dünya Kəşfiyyatçısı')),
               body: Center(
                 child: Text(state.message,
-                    style: const TextStyle(color: AppColors.textSecondary)),
+                    style: TextStyle(color: colors.textSecondary)),
               ),
             );
           }
@@ -65,6 +64,7 @@ class _CountryDetail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     final country = state.country;
     final currencies = country.currencies
         .map((c) => '${c.name}${c.symbol != null ? ' (${c.symbol})' : ''}')
@@ -78,25 +78,25 @@ class _CountryDetail extends StatelessWidget {
         SliverAppBar(
           expandedHeight: 220,
           pinned: true,
-          backgroundColor: AppColors.background,
+          backgroundColor: colors.background,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+            icon: Icon(Icons.arrow_back, color: colors.textPrimary),
             onPressed: () => Navigator.pop(context),
           ),
           title: const Text('Dünya Kəşfiyyatçısı'),
           actions: [
-            BlocBuilder<CountryDetailBloc, CountryDetailState>(
+            BlocBuilder<CountryDetailCubit, CountryDetailState>(
               builder: (ctx, s) {
                 final fav =
                     s is CountryDetailLoaded && s.country.isFavorite;
                 return IconButton(
                   icon: Icon(
                     fav ? Icons.favorite : Icons.favorite_border,
-                    color: fav ? Colors.redAccent : AppColors.textSecondary,
+                    color: fav ? Colors.redAccent : colors.textSecondary,
                   ),
                   onPressed: () => ctx
-                      .read<CountryDetailBloc>()
-                      .add(ToggleFavoriteDetailEvent(country.cca3)),
+                      .read<CountryDetailCubit>()
+                      .toggleFavorite(country.cca3),
                 );
               },
             ),
@@ -109,9 +109,9 @@ class _CountryDetail extends StatelessWidget {
                   imageUrl: country.flagPng,
                   fit: BoxFit.cover,
                   placeholder: (_, _) =>
-                      Container(color: AppColors.surfaceVariant),
+                      Container(color: colors.surfaceVariant),
                   errorWidget: (_, _, _) =>
-                      Container(color: AppColors.surfaceVariant),
+                      Container(color: colors.surfaceVariant),
                 ),
                 Container(
                   decoration: BoxDecoration(
@@ -120,8 +120,8 @@ class _CountryDetail extends StatelessWidget {
                       end: Alignment.bottomCenter,
                       colors: [
                         Colors.transparent,
-                        AppColors.background.withValues(alpha: 0.8),
-                        AppColors.background,
+                        colors.background.withValues(alpha: 0.8),
+                        colors.background,
                       ],
                     ),
                   ),
@@ -152,8 +152,8 @@ class _CountryDetail extends StatelessWidget {
                       const SizedBox(height: 6),
                       Text(
                         country.commonName,
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
+                        style: TextStyle(
+                          color: colors.textPrimary,
                           fontSize: 26,
                           fontWeight: FontWeight.bold,
                         ),
@@ -178,10 +178,9 @@ class _CountryDetail extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
+                    color: colors.surface,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                        color: AppColors.border, width: 0.5),
+                    border: Border.all(color: colors.border, width: 0.5),
                   ),
                   child: Column(
                     children: [
@@ -190,32 +189,32 @@ class _CountryDetail extends StatelessWidget {
                         label: 'PAYTAXT',
                         value: country.capital ?? '—',
                       ),
-                      const Divider(height: 1),
+                      Divider(height: 1, color: colors.border),
                       InfoRowWidget(
                         icon: Icons.people_outline,
                         label: 'ƏHALİ',
                         value: NumberFormatter.formatPopulation(
                             country.population),
                       ),
-                      const Divider(height: 1),
+                      Divider(height: 1, color: colors.border),
                       InfoRowWidget(
                         icon: Icons.translate,
                         label: 'RƏSMİ DİLLƏR',
                         value: languages.isEmpty ? '—' : languages,
                       ),
-                      const Divider(height: 1),
+                      Divider(height: 1, color: colors.border),
                       InfoRowWidget(
                         icon: Icons.currency_exchange,
                         label: 'VALYUTA',
                         value: currencies.isEmpty ? '—' : currencies,
                       ),
-                      const Divider(height: 1),
+                      Divider(height: 1, color: colors.border),
                       InfoRowWidget(
                         icon: Icons.schedule,
                         label: 'VAXT ZONASI',
                         value: timezones.isEmpty ? '—' : timezones,
                       ),
-                      const Divider(height: 1),
+                      Divider(height: 1, color: colors.border),
                       InfoRowWidget(
                         icon: Icons.language,
                         label: 'İNTERNET DOMENİ',
@@ -225,12 +224,13 @@ class _CountryDetail extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 24),
-                _SectionHeader(icon: Icons.flag_outlined, title: 'Milli Bayraq'),
+                _SectionHeader(
+                    icon: Icons.flag_outlined, title: 'Milli Bayraq'),
                 const SizedBox(height: 8),
                 Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.border, width: 0.5),
+                    border: Border.all(color: colors.border, width: 0.5),
                   ),
                   clipBehavior: Clip.antiAlias,
                   child: Column(
@@ -241,9 +241,9 @@ class _CountryDetail extends StatelessWidget {
                         height: 160,
                         fit: BoxFit.cover,
                         placeholder: (_, _) =>
-                            Container(height: 160, color: AppColors.surface),
+                            Container(height: 160, color: colors.surface),
                         errorWidget: (_, _, _) =>
-                            Container(height: 160, color: AppColors.surface),
+                            Container(height: 160, color: colors.surface),
                       ),
                       if (country.flagAlt != null &&
                           country.flagAlt!.isNotEmpty)
@@ -251,8 +251,8 @@ class _CountryDetail extends StatelessWidget {
                           padding: const EdgeInsets.all(12),
                           child: Text(
                             '"${country.flagAlt}"',
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
+                            style: TextStyle(
+                              color: colors.textSecondary,
                               fontSize: 12,
                               fontStyle: FontStyle.italic,
                             ),
@@ -358,14 +358,15 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Row(
       children: [
         Icon(icon, color: AppColors.primary, size: 20),
         const SizedBox(width: 8),
         Text(
           title,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
+          style: TextStyle(
+            color: colors.textPrimary,
             fontSize: 16,
             fontWeight: FontWeight.w700,
           ),
@@ -381,6 +382,7 @@ class _FunFactCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -415,8 +417,8 @@ class _FunFactCard extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             fact,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
+            style: TextStyle(
+              color: colors.textSecondary,
               fontSize: 13,
               height: 1.5,
             ),
@@ -429,7 +431,7 @@ class _FunFactCard extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(
                     horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceVariant,
+                  color: colors.surfaceVariant,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(

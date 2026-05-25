@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../bloc/country_list/country_list_event.dart';
 import '../../../app/theme/app_colors.dart';
+import '../bloc/country_list/country_list_state.dart';
 
 class SortBottomSheet extends StatelessWidget {
   final SortType current;
@@ -23,10 +23,11 @@ class SortBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -36,19 +37,19 @@ class SortBottomSheet extends StatelessWidget {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: AppColors.border,
+              color: colors.border,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
           const SizedBox(height: 16),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
                 'Çeşidlə',
                 style: TextStyle(
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                 ),
@@ -66,15 +67,13 @@ class SortBottomSheet extends StatelessWidget {
               },
               leading: Icon(
                 icon,
-                color: isSelected ? AppColors.primary : AppColors.textMuted,
+                color: isSelected ? AppColors.primary : colors.textMuted,
                 size: 22,
               ),
               title: Text(
                 label,
                 style: TextStyle(
-                  color: isSelected
-                      ? AppColors.primary
-                      : AppColors.textPrimary,
+                  color: isSelected ? AppColors.primary : colors.textPrimary,
                   fontSize: 14,
                   fontWeight:
                       isSelected ? FontWeight.w600 : FontWeight.w400,

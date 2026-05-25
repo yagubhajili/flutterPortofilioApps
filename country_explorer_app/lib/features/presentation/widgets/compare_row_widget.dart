@@ -19,6 +19,7 @@ class CompareRowWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
@@ -36,13 +37,13 @@ class CompareRowWidget extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(icon, size: 16, color: AppColors.textSecondary),
+                Icon(icon, size: 16, color: colors.textSecondary),
                 const SizedBox(width: 4),
                 Flexible(
                   child: Text(
                     label,
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
+                    style: TextStyle(
+                      color: colors.textSecondary,
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
                     ),
@@ -80,15 +81,17 @@ class _ValueCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
         color: highlight
             ? AppColors.primary.withValues(alpha: 0.15)
-            : AppColors.surfaceVariant,
+            : colors.surfaceVariant,
         borderRadius: BorderRadius.circular(8),
         border: highlight
-            ? Border.all(color: AppColors.primary.withValues(alpha: 0.4), width: 0.5)
+            ? Border.all(
+                color: AppColors.primary.withValues(alpha: 0.4), width: 0.5)
             : null,
       ),
       child: Align(
@@ -96,7 +99,7 @@ class _ValueCell extends StatelessWidget {
         child: Text(
           value,
           style: TextStyle(
-            color: highlight ? AppColors.primaryLight : AppColors.textPrimary,
+            color: highlight ? AppColors.primaryLight : colors.textPrimary,
             fontSize: 13,
             fontWeight: highlight ? FontWeight.w700 : FontWeight.w400,
           ),

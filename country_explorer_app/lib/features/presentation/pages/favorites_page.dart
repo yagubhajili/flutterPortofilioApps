@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../app/theme/app_colors.dart';
-import '../bloc/favorites/favorites_bloc.dart';
-import '../bloc/favorites/favorites_event.dart';
+import '../bloc/favorites/favorites_cubit.dart';
 import '../bloc/favorites/favorites_state.dart';
 import '../widgets/country_card.dart';
 import 'detail_page.dart';
@@ -18,26 +17,28 @@ class _FavoritesPageState extends State<FavoritesPage> {
   @override
   void initState() {
     super.initState();
-    context.read<FavoritesBloc>().add(const LoadFavoritesEvent());
+    context.read<FavoritesCubit>().load();
   }
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Scaffold(
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 16, 16, 0),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
               child: Row(
                 children: [
-                  Icon(Icons.favorite, color: AppColors.primary, size: 22),
-                  SizedBox(width: 8),
+                  const Icon(Icons.favorite,
+                      color: AppColors.primary, size: 22),
+                  const SizedBox(width: 8),
                   Text(
                     'Sevimlilər',
                     style: TextStyle(
-                      color: AppColors.textPrimary,
+                      color: colors.textPrimary,
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
                     ),
@@ -47,7 +48,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
             ),
             const SizedBox(height: 16),
             Expanded(
-              child: BlocBuilder<FavoritesBloc, FavoritesState>(
+              child: BlocBuilder<FavoritesCubit, FavoritesState>(
                 builder: (context, state) {
                   if (state is FavoritesLoading) {
                     return const Center(
@@ -58,8 +59,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                   if (state is FavoritesError) {
                     return Center(
                       child: Text(state.message,
-                          style: const TextStyle(
-                              color: AppColors.textSecondary)),
+                          style: TextStyle(color: colors.textSecondary)),
                     );
                   }
                   if (state is FavoritesLoaded) {
@@ -77,19 +77,18 @@ class _FavoritesPageState extends State<FavoritesPage> {
                         return CountryCard(
                           country: country,
                           onTap: () {
-                            final bloc = context.read<FavoritesBloc>();
+                            final cubit = context.read<FavoritesCubit>();
                             Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (_) =>
                                     DetailPage(cca3: country.cca3),
                               ),
-                            ).then((_) =>
-                                bloc.add(const LoadFavoritesEvent()));
+                            ).then((_) => cubit.load());
                           },
                           onFavoriteTap: () => context
-                              .read<FavoritesBloc>()
-                              .add(ToggleFavoriteEvent(country.cca3)),
+                              .read<FavoritesCubit>()
+                              .toggleFavorite(country.cca3),
                         );
                       },
                     );
@@ -110,24 +109,24 @@ class _EmptyFavorites extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    final colors = AppColors.of(context);
+    return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.favorite_border,
-              color: AppColors.textMuted, size: 56),
-          SizedBox(height: 16),
+          Icon(Icons.favorite_border, color: colors.textMuted, size: 56),
+          const SizedBox(height: 16),
           Text(
             'Hələ sevimli ölkəniz yoxdur.',
             style: TextStyle(
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
                 fontSize: 15,
                 fontWeight: FontWeight.w500),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
             'Ölkə kartında ♥ düyməsinə toxunun.',
-            style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+            style: TextStyle(color: colors.textMuted, fontSize: 13),
           ),
         ],
       ),

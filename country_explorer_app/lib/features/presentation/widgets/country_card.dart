@@ -1,9 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import '../../../app/theme/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/number_formatter.dart';
 import '../../domain/entities/country_entity.dart';
-import '../../../app/theme/app_colors.dart';
 
 class CountryCard extends StatelessWidget {
   final CountryEntity country;
@@ -19,14 +19,15 @@ class CountryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     final regionColor = AppColors.regionColor(country.region);
     return GestureDetector(
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: colors.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.border, width: 0.5),
+          border: Border.all(color: colors.border, width: 0.5),
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(
@@ -46,8 +47,8 @@ class CountryCard extends StatelessWidget {
                 children: [
                   Text(
                     country.commonName,
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
+                    style: TextStyle(
+                      color: colors.textPrimary,
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
                     ),
@@ -93,6 +94,7 @@ class _FlagImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Stack(
       children: [
         AspectRatio(
@@ -100,11 +102,10 @@ class _FlagImage extends StatelessWidget {
           child: CachedNetworkImage(
             imageUrl: flagUrl,
             fit: BoxFit.cover,
-            placeholder: (_, _) => Container(color: AppColors.surfaceVariant),
+            placeholder: (_, _) => Container(color: colors.surfaceVariant),
             errorWidget: (_, _, _) => Container(
-              color: AppColors.surfaceVariant,
-              child: const Icon(Icons.flag_outlined,
-                  color: AppColors.textMuted, size: 40),
+              color: colors.surfaceVariant,
+              child: Icon(Icons.flag_outlined, color: colors.textMuted, size: 40),
             ),
           ),
         ),
@@ -114,7 +115,7 @@ class _FlagImage extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
-              color: regionColor.withValues(alpha:0.85),
+              color: regionColor.withValues(alpha: 0.85),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text(
@@ -136,7 +137,7 @@ class _FlagImage extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha:0.5),
+                color: Colors.black.withValues(alpha: 0.5),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -165,20 +166,20 @@ class _InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Row(
       children: [
-        Icon(icon, size: 14, color: AppColors.textMuted),
+        Icon(icon, size: 14, color: colors.textMuted),
         const SizedBox(width: 5),
         Text(
           '$label: ',
-          style: const TextStyle(
-              color: AppColors.textSecondary, fontSize: 12),
+          style: TextStyle(color: colors.textSecondary, fontSize: 12),
         ),
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(
-                color: AppColors.textPrimary,
+            style: TextStyle(
+                color: colors.textPrimary,
                 fontSize: 12,
                 fontWeight: FontWeight.w500),
             maxLines: 1,
