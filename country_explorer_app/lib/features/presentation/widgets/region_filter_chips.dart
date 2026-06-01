@@ -1,27 +1,27 @@
 import 'package:flutter/material.dart';
 import '../../../app/theme/app_colors.dart';
+import '../../../core/constants/app_constants.dart';
 
 class RegionFilterChips extends StatelessWidget {
   final String selected;
   final ValueChanged<String> onSelected;
 
+  static const _allKey = 'Hamısı';
+
   static const regions = [
-    'Hamısı',
-    'Europe',
-    'Asia',
+    _allKey,
     'Africa',
     'Americas',
+    'Antarctic',
+    'Asia',
+    'Europe',
     'Oceania',
   ];
 
-  static const regionLabels = {
-    'Hamısı': 'Hamısı',
-    'Europe': 'Avropa',
-    'Asia': 'Asiya',
-    'Africa': 'Afrika',
-    'Americas': 'Amerika',
-    'Oceania': 'Okeaniya',
-  };
+  static String _label(String region) {
+    if (region == _allKey) return _allKey;
+    return AppConstants.regionNames[region] ?? region;
+  }
 
   const RegionFilterChips({
     super.key,
@@ -41,7 +41,7 @@ class RegionFilterChips extends StatelessWidget {
         separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (context, i) {
           final region = regions[i];
-          final label = regionLabels[region] ?? region;
+          final label = _label(region);
           final isSelected = selected == region;
           return GestureDetector(
             onTap: () => onSelected(region),

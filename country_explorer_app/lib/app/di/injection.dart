@@ -14,10 +14,14 @@ import '../../features/presentation/bloc/compare/compare_cubit.dart';
 import '../../features/presentation/bloc/country_detail/country_detail_cubit.dart';
 import '../../features/presentation/bloc/country_list/country_list_cubit.dart';
 import '../../features/presentation/bloc/favorites/favorites_cubit.dart';
+import '../theme/theme_notifier.dart';
 
 final sl = GetIt.instance;
 
 Future<void> initDependencies() async {
+  // Theme
+  sl.registerLazySingleton(() => ThemeNotifier());
+
   // External
   sl.registerLazySingleton<GetStorage>(() => GetStorage());
   sl.registerLazySingleton<Dio>(() {

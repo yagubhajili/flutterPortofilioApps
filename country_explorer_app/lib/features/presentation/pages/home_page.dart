@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../app/di/injection.dart';
 import '../../../app/theme/app_colors.dart';
+import '../../../app/theme/theme_notifier.dart';
 import '../bloc/country_list/country_list_cubit.dart';
 import '../bloc/country_list/country_list_state.dart';
 import '../widgets/country_card.dart';
@@ -154,8 +156,14 @@ class _Header extends StatelessWidget {
               ),
               const Spacer(),
               IconButton(
-                icon: Icon(Icons.search, color: colors.textSecondary),
-                onPressed: () {},
+                icon: Icon(
+                  Theme.of(context).brightness == Brightness.dark
+                      ? Icons.light_mode_outlined
+                      : Icons.dark_mode_outlined,
+                  color: colors.textSecondary,
+                ),
+                onPressed: () => sl<ThemeNotifier>()
+                    .toggle(Theme.of(context).brightness),
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
               ),
