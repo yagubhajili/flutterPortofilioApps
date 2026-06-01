@@ -1,0 +1,55 @@
+name: movie_app
+description: Movie Discovery App — TMDB powered, Clean Architecture + Cubit + Dio
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.3
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management
+  flutter_bloc: ^9.1.1
+  equatable: ^2.0.5
+
+  # Dependency injection
+  get_it: ^7.7.0
+
+  # Networking
+  dio: ^5.9.0
+  dio_cache_interceptor: ^3.5.0
+
+  # Local storage
+  shared_preferences: ^2.3.5
+
+  # Images
+  cached_network_image: ^3.4.1
+
+  # Navigation
+  go_router: ^14.6.0
+
+  # YouTube player
+  youtube_player_flutter: ^9.1.1
+
+  # Pagination
+  infinite_scroll_pagination: ^4.1.0
+
+  # UI
+  google_fonts: ^6.2.0
+  shimmer: ^3.0.0
+  share_plus: ^10.1.0
+
+  # Functional error handling
+  dartz: ^0.10.1
+
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
